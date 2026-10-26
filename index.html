@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="my">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Clinic EMR — ဆေးခန်း မှတ်တမ်း</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;500;600;700;800&family=Noto+Serif+Myanmar:wght@600;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f3f6f4;
+        --surface: #ffffff;
+        --surface-2: #eaf0ec;
+        --ink: #16211c;
+        --ink-soft: #43554c;
+        --ink-faint: #71827a;
+        --line: #d7e0da;
+        --accent: #0d6e5f;
+        --accent-strong: #095346;
+        --accent-soft: #dcefe9;
+        --warn-bg: #fdeeda;
+        --warn-ink: #8a5410;
+        --warn-line: #f0cf9a;
+        --danger: #b3372c;
+        --danger-soft: #fbe9e6;
+        --shadow: 0 1px 2px rgba(18, 40, 32, .06), 0 8px 24px -12px rgba(18, 40, 32, .18);
+        --radius: 14px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e1512;
+          --surface: #16211c;
+          --surface-2: #1d2b25;
+          --ink: #e8f0ec;
+          --ink-soft: #b3c4bb;
+          --ink-faint: #84988d;
+          --line: #2b3d35;
+          --accent: #3ec7ae;
+          --accent-strong: #7fe0cb;
+          --accent-soft: #17382f;
+          --warn-bg: #3a2c12;
+          --warn-ink: #f2c078;
+          --warn-line: #6b5322;
+          --danger: #f0937f;
+          --danger-soft: #3d211c;
+          --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+        }
+      }
+      * { box-sizing: border-box; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Noto Sans Myanmar", "Pyidaungsu", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.65;
+      }
+      button, input, select, textarea { font: inherit; color: inherit; }
+      button { cursor: pointer; }
+      :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+      .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 64px; }
+
+      /* ---------- top bar ---------- */
+      .topbar {
+        display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+        padding: 14px 0 18px;
+      }
+      .topbar h1 {
+        font-family: "Noto Serif Myanmar", "Noto Sans Myanmar", serif;
+        font-size: 1.55rem; font-weight: 700; margin: 0; letter-spacing: .01em;
+      }
+      .topbar h1 .en { font-family: "Noto Sans Myanmar", sans-serif; font-size: .82rem; font-weight: 600; color: var(--ink-faint); display: block; letter-spacing: .06em; }
+      .topbar .spacer { flex: 1; }
+      .top-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+      .btn {
+        display: inline-flex; align-items: center; gap: 7px;
+        border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+        border-radius: 10px; padding: 9px 15px; font-weight: 600; font-size: .93rem;
+        box-shadow: var(--shadow); text-decoration: none;
+      }
+      .btn:hover { border-color: var(--accent); }
+      .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      @media (prefers-color-scheme: dark) { .btn.primary { color: #06231d; } }
+      .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+      .btn.ghost { box-shadow: none; background: transparent; }
+      .btn.danger { color: var(--danger); }
+      .btn.small { padding: 6px 11px; font-size: .86rem; border-radius: 8px; }
+      .btn svg { flex: none; }
+
+      /* ---------- stats strip ---------- */
+      .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+      .stat {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 10px 16px; min-width: 132px; box-shadow: var(--shadow);
+      }
+      .stat b { font-size: 1.35rem; display: block; line-height: 1.25; }
+      .stat span { font-size: .82rem; color: var(--ink-faint); }
+
+      /* ---------- search ---------- */
+      .searchbar { display: flex; gap: 10px; margin-bottom: 14px; }
+      .searchbar .field { flex: 1; position: relative; }
+      .searchbar svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-faint); pointer-events: none; }
+      .searchbar input { padding-left: 40px; }
+
+      input[type="text"], input[type="tel"], input[type="number"], input[type="date"],
+      select, textarea {
+        width: 100%; background: var(--surface); border: 1px solid var(--line);
+        border-radius: 10px; padding: 10px 12px; font-size: .97rem;
+      }
+      textarea { resize: vertical; min-height: 64px; }
+      input::placeholder, textarea::placeholder { color: var(--ink-faint); }
+
+      /* ---------- patient list ---------- */
+      .plist { display: grid; gap: 10px; }
+      .pcard {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 14px 16px; display: flex; gap: 14px; align-items: flex-start; text-align: left;
+        width: 100%; box-shadow: var(--shadow);
+      }
+      .pcard:hover { border-color: var(--accent); }
+      .avatar {
+        flex: none; width: 46px; height: 46px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent-strong);
+        display: grid; place-items: center; font-weight: 700; font-size: 1.05rem;
+      }
+      .pcard .main { flex: 1; min-width: 0; }
+      .pcard .name { font-weight: 700; font-size: 1.05rem; }
+      .pcard .meta { color: var(--ink-soft); font-size: .9rem; }
+      .pcard .sub { color: var(--ink-faint); font-size: .84rem; margin-top: 2px; }
+      .badge {
+        display: inline-block; font-size: .76rem; font-weight: 700; border-radius: 999px;
+        padding: 1px 9px; margin-left: 6px; vertical-align: 2px;
+        background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line);
+      }
+      .pcard .visits { text-align: right; flex: none; }
+      .pcard .visits b { display: block; font-size: 1.05rem; }
+      .pcard .visits span { font-size: .78rem; color: var(--ink-faint); }
+
+      .empty {
+        border: 1.5px dashed var(--line); border-radius: var(--radius);
+        padding: 38px 20px; text-align: center; color: var(--ink-soft); background: var(--surface);
+      }
+      .empty b { display: block; font-size: 1.08rem; color: var(--ink); margin-bottom: 4px; }
+      .empty .btn { margin-top: 14px; }
+
+      /* ---------- panels & forms ---------- */
+      .panel {
+        background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+        padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px;
+      }
+      .panel h2 { margin: 0 0 4px; font-size: 1.18rem; font-weight: 700; }
+      .panel h3 { margin: 20px 0 8px; font-size: 1rem; font-weight: 700; }
+      .panel h3:first-child { margin-top: 0; }
+      .crumb { margin-bottom: 12px; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .grid3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+      @media (max-width: 640px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+      .fld { display: block; margin-bottom: 12px; }
+      .fld > span { display: block; font-size: .87rem; font-weight: 600; margin-bottom: 5px; color: var(--ink-soft); }
+      .fld > span .req { color: var(--danger); }
+      .fld > span .en { color: var(--ink-faint); font-weight: 500; }
+      .form-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .err { color: var(--danger); font-size: .88rem; font-weight: 600; display: none; margin-top: 8px; }
+      .err.show { display: block; }
+
+      .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px 18px; margin-top: 10px; }
+      .kv div span { display: block; font-size: .8rem; color: var(--ink-faint); font-weight: 600; }
+      .kv div b { font-weight: 600; }
+      .allergy-box {
+        margin-top: 14px; background: var(--warn-bg); border: 1px solid var(--warn-line);
+        color: var(--warn-ink); border-radius: 10px; padding: 9px 13px; font-weight: 600; font-size: .93rem;
+      }
+
+      /* ---------- visits ---------- */
+      .visit { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 12px; background: var(--surface); box-shadow: var(--shadow); }
+      .visit-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; }
+      .visit-head .date { font-weight: 700; font-size: 1.02rem; }
+      .visit-head .dx { color: var(--accent-strong); font-weight: 700; }
+      .visit-head .spacer { flex: 1; }
+      .visit dl { margin: 10px 0 0; display: grid; gap: 6px; }
+      .visit dl div { display: grid; grid-template-columns: 128px 1fr; gap: 10px; }
+      .visit dt { color: var(--ink-faint); font-size: .86rem; font-weight: 600; }
+      .visit dd { margin: 0; white-space: pre-wrap; }
+      @media (max-width: 560px) { .visit dl div { grid-template-columns: 1fr; gap: 0; } }
+      .followup { color: var(--accent-strong); font-weight: 600; }
+
+      table.rx { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .93rem; }
+      table.rx th, table.rx td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
+      table.rx th { background: var(--surface-2); font-size: .82rem; }
+      table.rx td.drug { font-weight: 600; }
+      .rx-edit { width: 100%; border-collapse: collapse; }
+      .rx-edit th { text-align: left; font-size: .8rem; color: var(--ink-soft); padding: 4px 6px 4px 0; }
+      .rx-edit td { padding: 3px 6px 3px 0; vertical-align: top; }
+      .rx-edit input { padding: 8px 9px; font-size: .92rem; }
+      .rx-edit .del { padding: 7px 9px; }
+      @media (max-width: 640px) {
+        /* stack prescription rows into cards instead of a wide table */
+        .rx-edit thead { display: none; }
+        .rx-edit, .rx-edit tbody, .rx-edit tr, .rx-edit td { display: block; width: 100%; }
+        .rx-edit tr { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+        .rx-edit td { padding: 3px 0; }
+        .rx-edit td:last-child { text-align: right; }
+        .rx-scroll { overflow-x: visible !important; }
+      }
+
+      /* ---------- modal ---------- */
+      .scrim {
+        position: fixed; inset: 0; background: rgba(10, 20, 16, .55);
+        display: none; align-items: center; justify-content: center; padding: 18px; z-index: 50;
+      }
+      .scrim.open { display: flex; }
+      .modal { background: var(--surface); border-radius: 16px; padding: 22px; max-width: 420px; width: 100%; box-shadow: var(--shadow); }
+      .modal h3 { margin: 0 0 6px; font-size: 1.1rem; }
+      .modal p { margin: 0 0 16px; color: var(--ink-soft); }
+      .modal .row { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%) translateY(20px);
+        background: var(--ink); color: var(--bg); padding: 10px 18px; border-radius: 999px;
+        font-weight: 600; font-size: .92rem; opacity: 0; pointer-events: none; transition: all .25s; z-index: 60;
+        max-width: calc(100vw - 32px); text-align: center;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+      .view { display: none; }
+      .view.active { display: block; }
+      .hidden-file { display: none; }
+      .foot { margin-top: 26px; color: var(--ink-faint); font-size: .84rem; text-align: center; }
+
+      /* ---------- prescription sheet (screen preview + print) ---------- */
+      #printArea { display: none; }
+      #printArea.open {
+        display: block; position: fixed; inset: 0; z-index: 45; overflow: auto;
+        background: var(--bg); padding: 16px 12px 44px;
+      }
+      #printArea .rx-toolbar { max-width: 760px; margin: 0 auto 12px; display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+      #printArea .sheet {
+        max-width: 760px; margin: 0 auto; background: #fff; color: #000;
+        border-radius: 6px; box-shadow: var(--shadow); padding: 28px 28px 32px;
+        font-family: "Noto Sans Myanmar", sans-serif;
+      }
+      #printArea .rx-head { border-bottom: 2.5px solid #000; padding-bottom: 10px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+      #printArea .rx-head .big { font-size: 22px; font-weight: 800; }
+      #printArea .rx-head .small { font-size: 12px; color: #333; }
+      #printArea .p-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 14px; margin-bottom: 12px; }
+      @media (max-width: 560px) { #printArea .p-meta { grid-template-columns: 1fr; } }
+      #printArea .rx-symbol { font-size: 30px; font-weight: 700; font-family: Georgia, serif; margin: 6px 0 2px; }
+      #printArea table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      #printArea th, #printArea td { border: 1px solid #555; padding: 6px 8px; text-align: left; }
+      #printArea th { background: #eee; }
+      #printArea .rx-foot { margin-top: 26px; display: flex; justify-content: space-between; font-size: 13px; }
+      #printArea .sign { text-align: center; }
+      #printArea .sign .line { border-top: 1px solid #000; width: 190px; margin-top: 44px; padding-top: 4px; }
+      @media print {
+        body { background: #fff; }
+        .wrap, .scrim, .toast { display: none !important; }
+        #printArea { display: block !important; position: static; overflow: visible; background: #fff; padding: 0; }
+        #printArea .rx-toolbar { display: none !important; }
+        #printArea .sheet { box-shadow: none; border-radius: 0; max-width: none; padding: 8mm 4mm; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="app">
+
+      <!-- ======================= PATIENT LIST VIEW ======================= -->
+      <section class="view active" id="view-list">
+        <div class="topbar">
+          <h1>ဆေးခန်း မှတ်တမ်း <span class="en">CLINIC EMR</span></h1>
+          <div class="spacer"></div>
+          <div class="top-actions">
+            <button class="btn" id="btnExport" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Backup ထုတ်ရန်
+            </button>
+            <button class="btn" id="btnImport" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Backup ပြန်သွင်းရန်
+            </button>
+            <input class="hidden-file" type="file" id="fileImport" accept="application/json,.json" />
+            <button class="btn primary" id="btnNewPatient" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              လူနာအသစ်
+            </button>
+          </div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><b id="statPatients">0</b><span>လူနာ စုစုပေါင်း</span></div>
+          <div class="stat"><b id="statVisits">0</b><span>Visit စုစုပေါင်း</span></div>
+          <div class="stat"><b id="statToday">0</b><span>ဒီနေ့ Visit</span></div>
+          <div class="stat"><b id="statFollow">0</b><span>Follow-up နီးနေသူ</span></div>
+        </div>
+
+        <div class="searchbar">
+          <div class="field">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+            <input type="text" id="searchInput" placeholder="လူနာနာမည် သို့မဟုတ် ဖုန်းနံပါတ်ဖြင့် ရှာရန်…" autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="plist" id="patientList"></div>
+        <div class="empty" id="emptyState" style="display:none">
+          <b id="emptyTitle">လူနာမှတ်တမ်း မရှိသေးပါ</b>
+          <span id="emptyText">ပထမဆုံး လူနာကို ထည့်ပြီး စတင်လိုက်ပါ။</span>
+          <br />
+          <button class="btn primary" id="btnEmptyAdd" type="button">လူနာအသစ် ထည့်ရန်</button>
+          <button class="btn" id="btnSample" type="button">နမူနာဒေတာ ထည့်ကြည့်ရန်</button>
+        </div>
+        <p class="foot">ဒေတာများကို ဒီ browser ထဲတွင်သာ သိမ်းဆည်းထားပါသည်။ စက်ပြောင်းသုံးပါက Backup ထုတ်ပြီး ပြန်သွင်းပါ။</p>
+      </section>
+
+      <!-- ======================= PATIENT FORM VIEW ======================= -->
+      <section class="view" id="view-patient-form">
+        <div class="crumb"><button class="btn ghost small" id="btnPatientBack" type="button">← လူနာစာရင်းသို့</button></div>
+        <div class="panel">
+          <h2 id="patientFormTitle">လူနာအသစ် ထည့်ရန်</h2>
+          <form id="patientForm" novalidate>
+            <input type="hidden" id="pfId" />
+            <div class="grid2">
+              <label class="fld"><span>နာမည် <i class="req">*</i></span><input type="text" id="pfName" placeholder="လူနာအမည် အပြည့်အစုံ" /></label>
+              <label class="fld"><span>ဖုန်းနံပါတ် <i class="req">*</i></span><input type="tel" id="pfPhone" placeholder="09…" /></label>
+            </div>
+            <div class="grid3">
+              <label class="fld"><span>အသက်</span><input type="number" id="pfAge" min="0" max="130" placeholder="နှစ်" /></label>
+              <label class="fld"><span>ကျား / မ</span>
+                <select id="pfSex">
+                  <option value="">— ရွေးပါ —</option>
+                  <option value="ကျား">ကျား</option>
+                  <option value="မ">မ</option>
+                  <option value="အခြား">အခြား</option>
+                </select>
+              </label>
+              <label class="fld"><span>လိပ်စာ <span class="en">(မဖြစ်မနေ မလို)</span></span><input type="text" id="pfAddress" placeholder="ရပ်ကွက် / မြို့နယ်" /></label>
+            </div>
+            <label class="fld"><span>ဓာတ်မတည့်မှု <span class="en">(Allergy)</span></span><input type="text" id="pfAllergy" placeholder="ဥပမာ — Penicillin မတည့် (မရှိရင် ကွက်လပ်ထားပါ)" /></label>
+            <label class="fld"><span>နာတာရှည် ရောဂါများ <span class="en">(Chronic conditions)</span></span><input type="text" id="pfChronic" placeholder="ဥပမာ — ဆီးချို, သွေးတိုး" /></label>
+            <p class="err" id="patientErr"></p>
+            <div class="form-actions">
+              <button class="btn primary" type="submit">သိမ်းရန်</button>
+              <button class="btn" type="button" id="btnPatientCancel">ပယ်ဖျက်ရန်</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ======================= PATIENT DETAIL VIEW ======================= -->
+      <section class="view" id="view-detail">
+        <div class="crumb"><button class="btn ghost small" id="btnDetailBack" type="button">← လူနာစာရင်းသို့</button></div>
+        <div class="panel" id="detailPanel"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+          <h2 style="margin:0;font-size:1.15rem">Visit မှတ်တမ်းများ</h2>
+          <div style="flex:1"></div>
+          <button class="btn primary" id="btnNewVisit" type="button">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Visit အသစ် ထည့်ရန်
+          </button>
+        </div>
+        <div id="visitList"></div>
+      </section>
+
+      <!-- ======================= VISIT FORM VIEW ======================= -->
+      <section class="view" id="view-visit-form">
+        <div class="crumb"><button class="btn ghost small" id="btnVisitBack" type="button">← လူနာအသေးစိတ်သို့</button></div>
+        <div class="panel">
+          <h2 id="visitFormTitle">Visit အသစ်</h2>
+          <p style="margin:0 0 14px;color:var(--ink-faint)" id="visitFormPatient"></p>
+          <form id="visitForm" novalidate>
+            <input type="hidden" id="vfId" />
+            <div class="grid2">
+              <label class="fld"><span>ရက်စွဲ <i class="req">*</i></span><input type="date" id="vfDate" /></label>
+              <label class="fld"><span>Follow-up ရက် <span class="en">(ရှိလျှင်)</span></span><input type="date" id="vfFollowup" /></label>
+            </div>
+            <label class="fld"><span>အဓိက တိုင်ကြားချက် <span class="en">(Chief complaint)</span> <i class="req">*</i></span><textarea id="vfComplaint" placeholder="လူနာ ပြောပြသော လက္ခဏာများ"></textarea></label>
+            <label class="fld"><span>စမ်းသပ် တွေ့ရှိချက် <span class="en">(Examination)</span></span><textarea id="vfExam" placeholder="BP, Pulse, Temp, စမ်းသပ်တွေ့ရှိချက်များ"></textarea></label>
+            <label class="fld"><span>ရောဂါ အမည်တပ်ချက် <span class="en">(Diagnosis)</span></span><input type="text" id="vfDiagnosis" placeholder="Diagnosis" /></label>
+
+            <h3>ဆေးစာရင်း <span style="color:var(--ink-faint);font-weight:500">(Prescription — ဆေးအမည်များကို English ဖြင့် ရေးပါ)</span></h3>
+            <div class="rx-scroll" style="overflow-x:auto">
+              <table class="rx-edit">
+                <thead><tr><th style="min-width:170px">ဆေး (Drug)</th><th style="min-width:100px">ပမာဏ (Dose)</th><th style="min-width:110px">အကြိမ် (Frequency)</th><th style="min-width:70px">ရက် (Days)</th><th style="min-width:130px">မှတ်ချက်</th><th></th></tr></thead>
+                <tbody id="rxBody"></tbody>
+              </table>
+            </div>
+            <button class="btn small" type="button" id="btnAddRx" style="margin-top:8px">+ ဆေးတစ်မျိုး ထပ်ထည့်ရန်</button>
+
+            <p class="err" id="visitErr"></p>
+            <div class="form-actions">
+              <button class="btn primary" type="submit">Visit သိမ်းရန်</button>
+              <button class="btn" type="button" id="btnVisitCancel">ပယ်ဖျက်ရန်</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <!-- confirm modal -->
+    <div class="scrim" id="scrim">
+      <div class="modal">
+        <h3 id="modalTitle">အတည်ပြုပါ</h3>
+        <p id="modalText"></p>
+        <div class="row">
+          <button class="btn" id="modalCancel" type="button">မလုပ်တော့ပါ</button>
+          <button class="btn primary" id="modalOk" type="button">အတည်ပြုရန်</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div id="printArea"></div>
+
+    <datalist id="drugList">
+      <option value="Paracetamol 500mg"></option>
+      <option value="Ibuprofen 400mg"></option>
+      <option value="Amoxicillin 500mg"></option>
+      <option value="Co-amoxiclav 625mg"></option>
+      <option value="Azithromycin 500mg"></option>
+      <option value="Cefixime 200mg"></option>
+      <option value="Cetirizine 10mg"></option>
+      <option value="Omeprazole 20mg"></option>
+      <option value="Metformin 500mg"></option>
+      <option value="Amlodipine 5mg"></option>
+      <option value="Losartan 50mg"></option>
+      <option value="Atorvastatin 20mg"></option>
+      <option value="Salbutamol Inhaler"></option>
+      <option value="ORS"></option>
+      <option value="Vitamin C 500mg"></option>
+      <option value="Multivitamin"></option>
+    </datalist>
+    <datalist id="freqList">
+      <option value="OD — တစ်နေ့ ၁ ကြိမ်"></option>
+      <option value="BD — တစ်နေ့ ၂ ကြိမ်"></option>
+      <option value="TDS — တစ်နေ့ ၃ ကြိမ်"></option>
+      <option value="QID — တစ်နေ့ ၄ ကြိမ်"></option>
+      <option value="HS — အိပ်ရာဝင်"></option>
+      <option value="PRN — လိုအပ်လျှင်"></option>
+      <option value="OM — မနက် ၁ ကြိမ်"></option>
+      <option value="ON — ည ၁ ကြိမ်"></option>
+    </datalist>
+
+    <script>
+      (function () {
+        "use strict";
+        var KEY = "clinic-emr-v1";
+        var state = { patients: [], visits: [] };
+        var currentPatientId = null;
+
+        /* ---------------- storage ---------------- */
+        function load() {
+          try {
+            var raw = localStorage.getItem(KEY);
+            if (raw) {
+              var parsed = JSON.parse(raw);
+              if (parsed && Array.isArray(parsed.patients) && Array.isArray(parsed.visits)) {
+                state = parsed;
+              }
+            }
+          } catch (e) { /* corrupted storage: start clean */ }
+        }
+        function save() {
+          try { localStorage.setItem(KEY, JSON.stringify(state)); }
+          catch (e) { toast("သိမ်းလို့ မရပါ — browser storage ပြည့်နေနိုင်သည်"); }
+        }
+        function uid() {
+          return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+        function esc(s) {
+          return String(s == null ? "" : s)
+            .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        }
+
+        /* ---------------- helpers ---------------- */
+        function $(id) { return document.getElementById(id); }
+        function visitsOf(pid) {
+          return state.visits.filter(function (v) { return v.patientId === pid; })
+            .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || (b.createdAt - a.createdAt); });
+        }
+        function patientById(id) {
+          for (var i = 0; i < state.patients.length; i++) if (state.patients[i].id === id) return state.patients[i];
+          return null;
+        }
+        function todayStr() {
+          var d = new Date();
+          var m = String(d.getMonth() + 1).padStart(2, "0");
+          var day = String(d.getDate()).padStart(2, "0");
+          return d.getFullYear() + "-" + m + "-" + day;
+        }
+        function fmtDate(s) {
+          if (!s) return "—";
+          var parts = s.split("-");
+          if (parts.length !== 3) return s;
+          return parts[2] + "/" + parts[1] + "/" + parts[0];
+        }
+        function initials(name) {
+          var t = String(name || "?").trim();
+          return t ? t.charAt(0).toUpperCase() : "?";
+        }
+        var toastTimer = null;
+        function toast(msg) {
+          var t = $("toast");
+          t.textContent = msg;
+          t.classList.add("show");
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+        }
+
+        /* ---------------- modal ---------------- */
+        var modalCb = null;
+        function confirmModal(title, text, okLabel, cb) {
+          $("modalTitle").textContent = title;
+          $("modalText").textContent = text;
+          $("modalOk").textContent = okLabel || "အတည်ပြုရန်";
+          modalCb = cb;
+          $("scrim").classList.add("open");
+        }
+        $("modalCancel").addEventListener("click", function () { $("scrim").classList.remove("open"); modalCb = null; });
+        $("modalOk").addEventListener("click", function () {
+          $("scrim").classList.remove("open");
+          if (modalCb) { var cb = modalCb; modalCb = null; cb(); }
+        });
+        $("scrim").addEventListener("click", function (e) {
+          if (e.target === $("scrim")) { $("scrim").classList.remove("open"); modalCb = null; }
+        });
+
+        /* ---------------- navigation ---------------- */
+        function show(viewId) {
+          var views = document.querySelectorAll(".view");
+          for (var i = 0; i < views.length; i++) views[i].classList.remove("active");
+          $(viewId).classList.add("active");
+          window.scrollTo(0, 0);
+        }
+        function goList() { renderList(); show("view-list"); }
+        function goDetail(pid) {
+          currentPatientId = pid;
+          renderDetail();
+          show("view-detail");
+        }
+
+        /* ---------------- patient list ---------------- */
+        function renderList() {
+          var q = $("searchInput").value.trim().toLowerCase();
+          var qDigits = q.replace(/\D/g, "");
+          var list = state.patients.slice().sort(function (a, b) { return b.createdAt - a.createdAt; });
+          if (q) {
+            list = list.filter(function (p) {
+              var nameHit = (p.name || "").toLowerCase().indexOf(q) >= 0;
+              var phoneHit = qDigits && (p.phone || "").replace(/\D/g, "").indexOf(qDigits) >= 0;
+              return nameHit || phoneHit;
+            });
+          }
+          /* stats */
+          var today = todayStr();
+          var todayCount = 0, followSoon = 0, soonLimit = new Date(Date.now() + 7 * 864e5);
+          var soonStr = soonLimit.toISOString().slice(0, 10);
+          state.visits.forEach(function (v) {
+            if (v.date === today) todayCount++;
+            if (v.followup && v.followup >= today && v.followup <= soonStr) followSoon++;
+          });
+          $("statPatients").textContent = state.patients.length;
+          $("statVisits").textContent = state.visits.length;
+          $("statToday").textContent = todayCount;
+          $("statFollow").textContent = followSoon;
+
+          var box = $("patientList");
+          if (!list.length) {
+            box.innerHTML = "";
+            $("emptyState").style.display = "block";
+            if (state.patients.length && q) {
+              $("emptyTitle").textContent = "ရှာမတွေ့ပါ";
+              $("emptyText").textContent = "“" + $("searchInput").value.trim() + "” နှင့် ကိုက်ညီသော လူနာ မရှိပါ။";
+              $("btnEmptyAdd").style.display = "none";
+              $("btnSample").style.display = "none";
+            } else {
+              $("emptyTitle").textContent = "လူနာမှတ်တမ်း မရှိသေးပါ";
+              $("emptyText").textContent = "ပထမဆုံး လူနာကို ထည့်ပြီး စတင်လိုက်ပါ။ ဘယ်လိုအလုပ်လုပ်လဲ အရင်စမ်းကြည့်ချင်ရင် နမူနာဒေတာ ထည့်နိုင်ပါသည်။";
+              $("btnEmptyAdd").style.display = "";
+              $("btnSample").style.display = "";
+            }
+            return;
+          }
+          $("emptyState").style.display = "none";
+          box.innerHTML = list.map(function (p) {
+            var vs = visitsOf(p.id);
+            var last = vs.length ? fmtDate(vs[0].date) : "Visit မရှိသေး";
+            var meta = [];
+            if (p.age) meta.push(p.age + " နှစ်");
+            if (p.sex) meta.push(p.sex);
+            if (p.phone) meta.push(p.phone);
+            return '<button class="pcard" type="button" data-pid="' + p.id + '">' +
+              '<span class="avatar">' + esc(initials(p.name)) + '</span>' +
+              '<span class="main"><span class="name">' + esc(p.name) + '</span>' +
+              (p.allergy ? '<span class="badge">Allergy: ' + esc(p.allergy) + '</span>' : '') +
+              '<span class="meta" style="display:block">' + esc(meta.join(" · ")) + '</span>' +
+              (p.chronic ? '<span class="sub" style="display:block">' + esc(p.chronic) + '</span>' : '') +
+              '</span>' +
+              '<span class="visits"><b>' + vs.length + '</b><span>visits</span>' +
+              '<span style="display:block;margin-top:2px">' + esc(last) + '</span></span>' +
+              '</button>';
+          }).join("");
+          var cards = box.querySelectorAll(".pcard");
+          for (var i = 0; i < cards.length; i++) {
+            cards[i].addEventListener("click", function () { goDetail(this.getAttribute("data-pid")); });
+          }
+        }
+
+        /* ---------------- patient form ---------------- */
+        function openPatientForm(p) {
+          $("pfId").value = p ? p.id : "";
+          $("pfName").value = p ? p.name : "";
+          $("pfPhone").value = p ? p.phone : "";
+          $("pfAge").value = p && p.age ? p.age : "";
+          $("pfSex").value = p ? (p.sex || "") : "";
+          $("pfAddress").value = p ? (p.address || "") : "";
+          $("pfAllergy").value = p ? (p.allergy || "") : "";
+          $("pfChronic").value = p ? (p.chronic || "") : "";
+          $("patientFormTitle").textContent = p ? "လူနာ အချက်အလက် ပြင်ရန်" : "လူနာအသစ် ထည့်ရန်";
+          $("patientErr").classList.remove("show");
+          show("view-patient-form");
+        }
+        $("patientForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var name = $("pfName").value.trim();
+          var phone = $("pfPhone").value.trim();
+          var err = $("patientErr");
+          if (!name || !phone) {
+            err.textContent = "နာမည်နှင့် ဖုန်းနံပါတ် ဖြည့်ရန် လိုအပ်ပါသည်။";
+            err.classList.add("show");
+            return;
+          }
+          err.classList.remove("show");
+          var id = $("pfId").value;
+          var data = {
+            name: name, phone: phone,
+            age: $("pfAge").value ? parseInt($("pfAge").value, 10) : "",
+            sex: $("pfSex").value,
+            address: $("pfAddress").value.trim(),
+            allergy: $("pfAllergy").value.trim(),
+            chronic: $("pfChronic").value.trim()
+          };
+          if (id) {
+            var p = patientById(id);
+            if (p) { for (var k in data) p[k] = data[k]; }
+            save(); toast("လူနာ အချက်အလက် ပြင်ပြီးပါပြီ");
+            goDetail(id);
+          } else {
+            data.id = uid(); data.createdAt = Date.now();
+            state.patients.push(data);
+            save(); toast("လူနာ အသစ် ထည့်ပြီးပါပြီ");
+            goDetail(data.id);
+          }
+        });
+
+        /* ---------------- patient detail ---------------- */
+        function renderDetail() {
+          var p = patientById(currentPatientId);
+          if (!p) { goList(); return; }
+          var vs = visitsOf(p.id);
+          var lastVisit = vs.length ? fmtDate(vs[0].date) : "—";
+          var html = '<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">' +
+            '<div style="flex:1;min-width:200px"><h2 style="margin-bottom:0">' + esc(p.name) + '</h2>' +
+            '<p style="margin:2px 0 0;color:var(--ink-faint)">လူနာမှတ်တမ်း စတင်ရက် — ' + fmtDate(new Date(p.createdAt).toISOString().slice(0, 10)) + ' · နောက်ဆုံး visit — ' + lastVisit + '</p></div>' +
+            '<button class="btn small" id="btnEditPatient" type="button">အချက်အလက် ပြင်ရန်</button>' +
+            '<button class="btn small danger" id="btnDeletePatient" type="button">လူနာ ဖျက်ရန်</button></div>' +
+            '<div class="kv">' +
+            '<div><span>ဖုန်းနံပါတ်</span><b>' + esc(p.phone || "—") + '</b></div>' +
+            '<div><span>အသက်</span><b>' + (p.age ? p.age + " နှစ်" : "—") + '</b></div>' +
+            '<div><span>ကျား / မ</span><b>' + esc(p.sex || "—") + '</b></div>' +
+            '<div><span>လိပ်စာ</span><b>' + esc(p.address || "—") + '</b></div>' +
+            '<div><span>နာတာရှည် ရောဂါများ</span><b>' + esc(p.chronic || "—") + '</b></div>' +
+            '<div><span>Visit အရေအတွက်</span><b>' + vs.length + '</b></div>' +
+            '</div>' +
+            (p.allergy ? '<div class="allergy-box">ဓာတ်မတည့်မှု (Allergy) — ' + esc(p.allergy) + '</div>' : '');
+          $("detailPanel").innerHTML = html;
+
+          $("btnEditPatient").addEventListener("click", function () { openPatientForm(p); });
+          $("btnDeletePatient").addEventListener("click", function () {
+            confirmModal("လူနာမှတ်တမ်း ဖျက်မလား?",
+              p.name + " ၏ အချက်အလက်နှင့် visit မှတ်တမ်း " + vs.length + " ခုလုံး ပျက်သွားပါမည်။ ပြန်ယူ၍ မရပါ။",
+              "ဖျက်ရန်",
+              function () {
+                state.patients = state.patients.filter(function (x) { return x.id !== p.id; });
+                state.visits = state.visits.filter(function (x) { return x.patientId !== p.id; });
+                save(); toast("လူနာမှတ်တမ်း ဖျက်ပြီးပါပြီ"); goList();
+              });
+          });
+
+          var vbox = $("visitList");
+          if (!vs.length) {
+            vbox.innerHTML = '<div class="empty"><b>Visit မှတ်တမ်း မရှိသေးပါ</b>ဒီလူနာအတွက် ပထမဆုံး visit ကို ထည့်ပါ။</div>';
+            return;
+          }
+          vbox.innerHTML = vs.map(function (v) {
+            var rxRows = (v.rx || []).filter(function (r) { return r.drug; }).map(function (r, i) {
+              return '<tr><td>' + (i + 1) + '</td><td class="drug">' + esc(r.drug) + '</td><td>' + esc(r.dose || "—") + '</td><td>' + esc(r.freq || "—") + '</td><td>' + esc(r.days || "—") + '</td><td>' + esc(r.notes || "") + '</td></tr>';
+            }).join("");
+            return '<article class="visit">' +
+              '<div class="visit-head"><span class="date">' + fmtDate(v.date) + '</span>' +
+              (v.diagnosis ? '<span class="dx">' + esc(v.diagnosis) + '</span>' : '') +
+              '<span class="spacer"></span>' +
+              '<button class="btn small" data-print="' + v.id + '" type="button">ဆေးစာ ကြည့်ရန်</button>' +
+              '<button class="btn small" data-edit="' + v.id + '" type="button">ပြင်ရန်</button>' +
+              '<button class="btn small danger" data-del="' + v.id + '" type="button">ဖျက်ရန်</button></div>' +
+              '<dl>' +
+              (v.complaint ? '<div><dt>တိုင်ကြားချက်</dt><dd>' + esc(v.complaint) + '</dd></div>' : '') +
+              (v.exam ? '<div><dt>စမ်းသပ်ချက်</dt><dd>' + esc(v.exam) + '</dd></div>' : '') +
+              (v.followup ? '<div><dt>Follow-up</dt><dd class="followup">' + fmtDate(v.followup) + ' ပြန်ပြရန်</dd></div>' : '') +
+              '</dl>' +
+              (rxRows ? '<table class="rx"><thead><tr><th>#</th><th>ဆေး</th><th>ပမာဏ</th><th>အကြိမ်</th><th>ရက်</th><th>မှတ်ချက်</th></tr></thead><tbody>' + rxRows + '</tbody></table>' : '') +
+              '</article>';
+          }).join("");
+
+          vbox.querySelectorAll("[data-print]").forEach(function (b) {
+            b.addEventListener("click", function () { printRx(this.getAttribute("data-print")); });
+          });
+          vbox.querySelectorAll("[data-edit]").forEach(function (b) {
+            b.addEventListener("click", function () { openVisitForm(this.getAttribute("data-edit")); });
+          });
+          vbox.querySelectorAll("[data-del]").forEach(function (b) {
+            b.addEventListener("click", function () {
+              var vid = this.getAttribute("data-del");
+              confirmModal("Visit ဖျက်မလား?", "ဒီ visit မှတ်တမ်း ပျက်သွားပါမည်။ ပြန်ယူ၍ မရပါ။", "ဖျက်ရန်", function () {
+                state.visits = state.visits.filter(function (x) { return x.id !== vid; });
+                save(); toast("Visit ဖျက်ပြီးပါပြီ"); renderDetail();
+              });
+            });
+          });
+        }
+
+        /* ---------------- visit form ---------------- */
+        function rxRow(r) {
+          r = r || {};
+          var tr = document.createElement("tr");
+          tr.innerHTML =
+            '<td><input type="text" class="rx-drug" list="drugList" placeholder="Drug name (English)" value="' + esc(r.drug || "") + '" /></td>' +
+            '<td><input type="text" class="rx-dose" placeholder="500mg" value="' + esc(r.dose || "") + '" /></td>' +
+            '<td><input type="text" class="rx-freq" list="freqList" placeholder="BD" value="' + esc(r.freq || "") + '" /></td>' +
+            '<td><input type="text" class="rx-days" placeholder="5" value="' + esc(r.days || "") + '" /></td>' +
+            '<td><input type="text" class="rx-notes" placeholder="အစာစားပြီး…" value="' + esc(r.notes || "") + '" /></td>' +
+            '<td><button class="btn small danger del" type="button" title="ဖယ်ရန်">✕</button></td>';
+          tr.querySelector(".del").addEventListener("click", function () { tr.remove(); });
+          return tr;
+        }
+        function openVisitForm(visitId) {
+          var p = patientById(currentPatientId);
+          if (!p) { goList(); return; }
+          var v = null;
+          if (visitId) {
+            for (var i = 0; i < state.visits.length; i++) if (state.visits[i].id === visitId) v = state.visits[i];
+          }
+          $("vfId").value = v ? v.id : "";
+          $("vfDate").value = v ? v.date : todayStr();
+          $("vfFollowup").value = v ? (v.followup || "") : "";
+          $("vfComplaint").value = v ? (v.complaint || "") : "";
+          $("vfExam").value = v ? (v.exam || "") : "";
+          $("vfDiagnosis").value = v ? (v.diagnosis || "") : "";
+          $("visitFormTitle").textContent = v ? "Visit ပြင်ရန်" : "Visit အသစ်";
+          $("visitFormPatient").textContent = "လူနာ — " + p.name + (p.phone ? " · " + p.phone : "");
+          $("visitErr").classList.remove("show");
+          var body = $("rxBody");
+          body.innerHTML = "";
+          var rows = v && v.rx && v.rx.length ? v.rx : [{}];
+          rows.forEach(function (r) { body.appendChild(rxRow(r)); });
+          show("view-visit-form");
+        }
+        $("btnAddRx").addEventListener("click", function () { $("rxBody").appendChild(rxRow()); });
+        $("visitForm").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var date = $("vfDate").value;
+          var complaint = $("vfComplaint").value.trim();
+          var err = $("visitErr");
+          if (!date || !complaint) {
+            err.textContent = "ရက်စွဲနှင့် အဓိက တိုင်ကြားချက် ဖြည့်ရန် လိုအပ်ပါသည်။";
+            err.classList.add("show");
+            return;
+          }
+          err.classList.remove("show");
+          var rx = [];
+          $("rxBody").querySelectorAll("tr").forEach(function (tr) {
+            var drug = tr.querySelector(".rx-drug").value.trim();
+            if (!drug) return;
+            rx.push({
+              drug: drug,
+              dose: tr.querySelector(".rx-dose").value.trim(),
+              freq: tr.querySelector(".rx-freq").value.trim(),
+              days: tr.querySelector(".rx-days").value.trim(),
+              notes: tr.querySelector(".rx-notes").value.trim()
+            });
+          });
+          var id = $("vfId").value;
+          var data = {
+            date: date, complaint: complaint,
+            exam: $("vfExam").value.trim(),
+            diagnosis: $("vfDiagnosis").value.trim(),
+            followup: $("vfFollowup").value || "",
+            rx: rx
+          };
+          if (id) {
+            for (var i = 0; i < state.visits.length; i++) {
+              if (state.visits[i].id === id) { for (var k in data) state.visits[i][k] = data[k]; }
+            }
+            save(); toast("Visit ပြင်ပြီးပါပြီ");
+          } else {
+            data.id = uid(); data.patientId = currentPatientId; data.createdAt = Date.now();
+            state.visits.push(data);
+            save(); toast("Visit သိမ်းပြီးပါပြီ");
+          }
+          goDetail(currentPatientId);
+        });
+
+        /* ---------------- prescription print ---------------- */
+        function printRx(visitId) {
+          var v = null, p = patientById(currentPatientId);
+          for (var i = 0; i < state.visits.length; i++) if (state.visits[i].id === visitId) v = state.visits[i];
+          if (!v || !p) return;
+          var meta = [];
+          if (p.age) meta.push("အသက် " + p.age + " နှစ်");
+          if (p.sex) meta.push(p.sex);
+          var rows = (v.rx || []).filter(function (r) { return r.drug; }).map(function (r, i) {
+            return '<tr><td>' + (i + 1) + '</td><td><b>' + esc(r.drug) + '</b></td><td>' + esc(r.dose || "—") + '</td><td>' + esc(r.freq || "—") + '</td><td>' + esc(r.days ? r.days + " ရက်" : "—") + '</td><td>' + esc(r.notes || "") + '</td></tr>';
+          }).join("");
+          $("printArea").innerHTML =
+            '<div class="rx-toolbar">' +
+            '<button class="btn" id="rxClose" type="button">← ပြန်သွားရန်</button>' +
+            '<button class="btn primary" id="rxPrint" type="button">Print ထုတ်ရန်</button></div>' +
+            '<div class="sheet">' +
+            '<div class="rx-head"><div><div class="big">ဆေးစာ</div><div class="small">Prescription</div></div>' +
+            '<div class="small">ရက်စွဲ — ' + fmtDate(v.date) + '</div></div>' +
+            '<div class="p-meta">' +
+            '<div>လူနာအမည် — <b>' + esc(p.name) + '</b></div>' +
+            '<div>' + esc(meta.join(" · ")) + '</div>' +
+            '<div>ဖုန် — ' + esc(p.phone || "—") + '</div>' +
+            (v.diagnosis ? '<div>Diagnosis — <b>' + esc(v.diagnosis) + '</b></div>' : '<div></div>') +
+            '</div>' +
+            (p.allergy ? '<div style="font-size:13px;margin-bottom:8px"><b>Allergy — ' + esc(p.allergy) + '</b></div>' : '') +
+            '<div class="rx-symbol">℞</div>' +
+            (rows ? '<table><thead><tr><th>#</th><th>ဆေး (Drug)</th><th>ပမာဏ</th><th>အကြိမ်</th><th>ကြာချိန်</th><th>မှတ်ချက်</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p>ဆေးစာရင်း မရှိပါ။</p>') +
+            (v.followup ? '<p style="font-size:14px;margin-top:14px">Follow-up — <b>' + fmtDate(v.followup) + '</b> ပြန်ပြရန်</p>' : '') +
+            '<div class="rx-foot"><div></div><div class="sign"><div class="line">ဆရာဝန် လက်မှတ်</div></div></div>' +
+            '</div>';
+          $("printArea").classList.add("open");
+          $("printArea").scrollTop = 0;
+          window.scrollTo(0, 0);
+          $("rxClose").addEventListener("click", function () { $("printArea").classList.remove("open"); });
+          $("rxPrint").addEventListener("click", function () { window.print(); });
+        }
+
+        /* ---------------- backup: export / import ---------------- */
+        $("btnExport").addEventListener("click", function () {
+          var payload = { app: "clinic-emr", version: 1, exportedAt: new Date().toISOString(), patients: state.patients, visits: state.visits };
+          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "clinic-emr-backup-" + todayStr() + ".json";
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 400);
+          toast("Backup ဖိုင် download ရပါပြီ");
+        });
+        $("btnImport").addEventListener("click", function () { $("fileImport").click(); });
+        $("fileImport").addEventListener("change", function () {
+          var file = this.files && this.files[0];
+          this.value = "";
+          if (!file) return;
+          var reader = new FileReader();
+          reader.onload = function () {
+            var parsed = null;
+            try { parsed = JSON.parse(reader.result); } catch (e) { /* handled below */ }
+            if (!parsed || !Array.isArray(parsed.patients) || !Array.isArray(parsed.visits)) {
+              toast("ဖိုင် မှားနေပါသည် — Clinic EMR backup ဖိုင် မဟုတ်ပါ");
+              return;
+            }
+            confirmModal("Backup ပြန်သွင်းမလား?",
+              "လက်ရှိ ဒေတာ (လူနာ " + state.patients.length + " ဦး) အားလုံးကို backup ထဲက ဒေတာ (လူနာ " + parsed.patients.length + " ဦး) ဖြင့် အစားထိုးပါမည်။",
+              "ပြန်သွင်းရန်",
+              function () {
+                state = { patients: parsed.patients, visits: parsed.visits };
+                save(); renderList(); show("view-list");
+                toast("Backup ပြန်သွင်းပြီးပါပြီ");
+              });
+          };
+          reader.readAsText(file);
+        });
+
+        /* ---------------- sample data ---------------- */
+        $("btnSample").addEventListener("click", function () {
+          var t = todayStr();
+          var p1 = { id: uid(), name: "နမူနာ — ဦးသာလှ", phone: "09123456789", age: 58, sex: "ကျား", address: "မြောက်ဥက္ကလာပ", allergy: "Penicillin", chronic: "သွေးတိုး, ဆီးချို", createdAt: Date.now() - 864e5 * 20 };
+          var p2 = { id: uid(), name: "နမူနာ — ဒေါ်ခင်မေ", phone: "09987654321", age: 34, sex: "မ", address: "", allergy: "", chronic: "", createdAt: Date.now() - 864e5 * 6 };
+          state.patients.push(p1, p2);
+          state.visits.push(
+            { id: uid(), patientId: p1.id, date: t, complaint: "ခေါင်းမူး, ခြေလက် ထုံကျင် (နမူနာ)", exam: "BP 150/95, Pulse 82, RBS 168 mg/dL", diagnosis: "Hypertension, DM Type 2", followup: "", rx: [
+              { drug: "Amlodipine 5mg", dose: "1 tab", freq: "OD — တစ်နေ့ ၁ ကြိမ်", days: "30", notes: "မနက်" },
+              { drug: "Metformin 500mg", dose: "1 tab", freq: "BD — တစ်နေ့ ၂ ကြိမ်", days: "30", notes: "အစာစားပြီး" }
+            ], createdAt: Date.now() },
+            { id: uid(), patientId: p2.id, date: t, complaint: "ချောင်းဆိုး ၃ ရက်, ကိုယ်ပူ (နမူနာ)", exam: "Temp 100.4°F, Throat congested, Chest clear", diagnosis: "URTI", followup: "", rx: [
+              { drug: "Paracetamol 500mg", dose: "1 tab", freq: "TDS — တစ်နေ့ ၃ ကြိမ်", days: "3", notes: "ကိုယ်ပူလျှင်" },
+              { drug: "Cetirizine 10mg", dose: "1 tab", freq: "ON — ည ၁ ကြိမ်", days: "5", notes: "" }
+            ], createdAt: Date.now() }
+          );
+          save(); renderList();
+          toast("နမူနာဒေတာ ထည့်ပြီးပါပြီ — မလိုရင် လူနာကို ဖျက်နိုင်ပါသည်");
+        });
+
+        /* ---------------- wiring ---------------- */
+        $("searchInput").addEventListener("input", renderList);
+        $("btnNewPatient").addEventListener("click", function () { openPatientForm(null); });
+        $("btnEmptyAdd").addEventListener("click", function () { openPatientForm(null); });
+        $("btnPatientBack").addEventListener("click", goList);
+        $("btnPatientCancel").addEventListener("click", function () {
+          var id = $("pfId").value;
+          if (id) goDetail(id); else goList();
+        });
+        $("btnDetailBack").addEventListener("click", goList);
+        $("btnNewVisit").addEventListener("click", function () { openVisitForm(null); });
+        $("btnVisitBack").addEventListener("click", function () { goDetail(currentPatientId); });
+        $("btnVisitCancel").addEventListener("click", function () { goDetail(currentPatientId); });
+
+        load();
+        renderList();
+      })();
+    </script>
+  </body>
+</html>
