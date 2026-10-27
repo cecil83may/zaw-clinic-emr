@@ -193,6 +193,38 @@
       @media (max-width: 560px) { .visit dl div { grid-template-columns: 1fr; gap: 0; } }
       .followup { color: var(--accent-strong); font-weight: 600; }
 
+      /* ---------- charges ---------- */
+      .visit .charges { margin-top: 12px; border-top: 1px dashed var(--line); padding-top: 10px; }
+      .charge-row { display: flex; justify-content: space-between; gap: 12px; font-size: .93rem; padding: 1px 0; }
+      .charge-row span { color: var(--ink-faint); }
+      .charge-row b { font-weight: 600; }
+      .charge-row.total { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 6px; font-size: 1rem; }
+      .charge-row.total span { color: var(--ink); font-weight: 700; }
+      .charge-row.total b { font-weight: 700; color: var(--accent-strong); }
+      .charge-total { font-size: 1.05rem; margin-top: 2px; }
+      .charge-total b { color: var(--accent-strong); font-size: 1.15rem; }
+
+      /* ---------- accounts ---------- */
+      .acct-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+      .acct-controls .fld { margin-bottom: 0; flex: 1; min-width: 140px; }
+      table.acct { width: 100%; border-collapse: collapse; font-size: .93rem; background: var(--surface); box-shadow: var(--shadow); }
+      table.acct th, table.acct td { border: 1px solid var(--line); padding: 7px 9px; text-align: right; }
+      table.acct th { background: var(--surface-2); font-size: .82rem; }
+      table.acct th:first-child, table.acct td:first-child,
+      table.acct th:nth-child(2), table.acct td:nth-child(2) { text-align: left; }
+      table.acct tfoot td { font-weight: 700; background: var(--surface-2); }
+      @media (max-width: 640px) {
+        /* stack account rows into cards instead of a wide table */
+        table.acct { box-shadow: none; background: transparent; border: none; }
+        table.acct thead { display: none; }
+        table.acct, table.acct tbody, table.acct tfoot, table.acct tr, table.acct td { display: block; width: 100%; }
+        table.acct tr { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; margin-bottom: 10px; background: var(--surface); box-shadow: var(--shadow); }
+        table.acct td { border: none; padding: 2px 0; display: flex; justify-content: space-between; gap: 12px; text-align: right; }
+        table.acct td::before { content: attr(data-label); color: var(--ink-faint); font-size: .84rem; font-weight: 600; text-align: left; }
+        table.acct tfoot td { background: transparent; }
+        table.acct tfoot tr { background: var(--surface-2); }
+      }
+
       table.rx { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: .93rem; }
       table.rx th, table.rx td { border: 1px solid var(--line); padding: 7px 9px; text-align: left; vertical-align: top; }
       table.rx th { background: var(--surface-2); font-size: .82rem; }
@@ -325,6 +357,10 @@
           <div class="spacer"></div>
           <div class="top-actions">
             <span class="user-chip" id="userChip" title="Login ဝင်ထားသူ"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg><span id="userEmail">—</span></span>
+            <button class="btn" id="btnAccounts" type="button">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg>
+              ငွေစာရင်း
+            </button>
             <button class="btn" id="btnExport" type="button">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Backup ထုတ်ရန်
@@ -441,6 +477,15 @@
             </div>
             <button class="btn small" type="button" id="btnAddRx" style="margin-top:8px">+ ဆေးတစ်မျိုး ထပ်ထည့်ရန်</button>
 
+            <h3>ကျသင့်ငွေ <span style="color:var(--ink-faint);font-weight:500">(Charges — ကျပ်၊ မဖြည့်လည်း ရပါသည်)</span></h3>
+            <div class="grid2">
+              <label class="fld"><span>စမ်းသပ်ခ</span><input type="number" id="vfConsultFee" min="0" step="any" inputmode="numeric" placeholder="0" /></label>
+              <label class="fld"><span>ဆေးဖိုး</span><input type="number" id="vfMedicineFee" min="0" step="any" inputmode="numeric" placeholder="0" /></label>
+              <label class="fld"><span>အခြားခ</span><input type="number" id="vfOtherFee" min="0" step="any" inputmode="numeric" placeholder="0" /></label>
+              <label class="fld"><span>လျှော့စျေး</span><input type="number" id="vfDiscount" min="0" step="any" inputmode="numeric" placeholder="0" /></label>
+            </div>
+            <div class="charge-total">စုစုပေါင်း — <b id="vfChargeTotal">0 ကျပ်</b></div>
+
             <p class="err" id="visitErr"></p>
             <div class="form-actions">
               <button class="btn primary" type="submit">Visit သိမ်းရန်</button>
@@ -448,6 +493,21 @@
             </div>
           </form>
         </div>
+      </section>
+      <!-- ======================= ACCOUNTS VIEW ======================= -->
+      <section class="view" id="view-accounts">
+        <div class="crumb"><button class="btn ghost small" id="btnAccountsBack" type="button">← လူနာစာရင်းသို့</button></div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px">
+          <h2 style="margin:0;font-size:1.25rem">ငွေစာရင်း</h2>
+          <div style="flex:1"></div>
+          <button class="btn primary" id="btnPrintAccounts" type="button">ရှင်းတမ်း Print ထုတ်ရန်</button>
+        </div>
+        <div class="acct-controls">
+          <label class="fld"><span>စရက် <span class="en">(From)</span></span><input type="date" id="acctFrom" /></label>
+          <label class="fld"><span>ဆုံးရက် <span class="en">(To)</span></span><input type="date" id="acctTo" /></label>
+        </div>
+        <div class="stats" id="acctStats"></div>
+        <div id="acctTableWrap"></div>
       </section>
     </div>
 
@@ -521,6 +581,7 @@
         }
         function tsToMs(s) { var t = s ? Date.parse(s) : NaN; return isNaN(t) ? Date.now() : t; }
         function msToIso(ms) { try { return new Date(ms).toISOString(); } catch (e) { return new Date().toISOString(); } }
+        function num(x) { var n = parseFloat(x); return isNaN(n) ? 0 : n; }
 
         /* ---------- Supabase row <-> app shape ---------- */
         function normPatient(r) {
@@ -546,6 +607,8 @@
             date: r.visit_date || "", complaint: r.chief_complaint || "",
             exam: r.examination || "", diagnosis: r.diagnosis || "",
             followup: r.follow_up_date || "", rx: rxItems || [],
+            consultationFee: num(r.consultation_fee), medicineFee: num(r.medicine_fee),
+            otherFee: num(r.other_fee), discount: num(r.discount),
             createdAt: tsToMs(r.created_at)
           };
         }
@@ -553,7 +616,9 @@
           return {
             patient_id: v.patientId, visit_date: v.date,
             chief_complaint: v.complaint || null, examination: v.exam || null,
-            diagnosis: v.diagnosis || null, follow_up_date: v.followup || null
+            diagnosis: v.diagnosis || null, follow_up_date: v.followup || null,
+            consultation_fee: num(v.consultationFee), medicine_fee: num(v.medicineFee),
+            other_fee: num(v.otherFee), discount: num(v.discount)
           };
         }
 
@@ -624,6 +689,28 @@
         function initials(name) {
           var t = String(name || "?").trim();
           return t ? t.charAt(0).toUpperCase() : "?";
+        }
+        function fmtNum(n) {
+          var v = Math.round(num(n) * 100) / 100;
+          return v.toLocaleString("en-US");
+        }
+        function fmtMoney(n) { return fmtNum(n) + " ကျပ်"; }
+        function visitTotal(v) {
+          return num(v.consultationFee) + num(v.medicineFee) + num(v.otherFee) - num(v.discount);
+        }
+        function hasCharges(v) {
+          return num(v.consultationFee) > 0 || num(v.medicineFee) > 0 || num(v.otherFee) > 0 || num(v.discount) > 0;
+        }
+        function chargesBlock(v) {
+          var total = visitTotal(v);
+          if (total <= 0) return "";
+          var rows = "";
+          if (num(v.consultationFee) > 0) rows += '<div class="charge-row"><span>စမ်းသပ်ခ</span><b>' + fmtMoney(v.consultationFee) + '</b></div>';
+          if (num(v.medicineFee) > 0) rows += '<div class="charge-row"><span>ဆေးဖိုး</span><b>' + fmtMoney(v.medicineFee) + '</b></div>';
+          if (num(v.otherFee) > 0) rows += '<div class="charge-row"><span>အခြားခ</span><b>' + fmtMoney(v.otherFee) + '</b></div>';
+          if (num(v.discount) > 0) rows += '<div class="charge-row"><span>လျှော့စျေး</span><b>− ' + fmtMoney(v.discount) + '</b></div>';
+          rows += '<div class="charge-row total"><span>စုစုပေါင်း</span><b>' + fmtMoney(total) + '</b></div>';
+          return '<div class="charges">' + rows + '</div>';
         }
         var toastTimer = null;
         function toast(msg) {
@@ -846,6 +933,7 @@
               (v.followup ? '<div><dt>Follow-up</dt><dd class="followup">' + fmtDate(v.followup) + ' ပြန်ပြရန်</dd></div>' : '') +
               '</dl>' +
               (rxRows ? '<table class="rx"><thead><tr><th>#</th><th>ဆေး</th><th>ပမာဏ</th><th>အကြိမ်</th><th>ရက်</th><th>မှတ်ချက်</th></tr></thead><tbody>' + rxRows + '</tbody></table>' : '') +
+              chargesBlock(v) +
               '</article>';
           }).join("");
 
@@ -895,6 +983,11 @@
           $("vfComplaint").value = v ? (v.complaint || "") : "";
           $("vfExam").value = v ? (v.exam || "") : "";
           $("vfDiagnosis").value = v ? (v.diagnosis || "") : "";
+          $("vfConsultFee").value = v && num(v.consultationFee) ? v.consultationFee : "";
+          $("vfMedicineFee").value = v && num(v.medicineFee) ? v.medicineFee : "";
+          $("vfOtherFee").value = v && num(v.otherFee) ? v.otherFee : "";
+          $("vfDiscount").value = v && num(v.discount) ? v.discount : "";
+          updateChargeTotal();
           $("visitFormTitle").textContent = v ? "Visit ပြင်ရန်" : "Visit အသစ်";
           $("visitFormPatient").textContent = "လူနာ — " + p.name + (p.phone ? " · " + p.phone : "");
           $("visitErr").classList.remove("show");
@@ -905,6 +998,20 @@
           show("view-visit-form");
         }
         $("btnAddRx").addEventListener("click", function () { $("rxBody").appendChild(rxRow()); });
+        function readChargeInputs() {
+          return {
+            consultationFee: num($("vfConsultFee").value),
+            medicineFee: num($("vfMedicineFee").value),
+            otherFee: num($("vfOtherFee").value),
+            discount: num($("vfDiscount").value)
+          };
+        }
+        function updateChargeTotal() {
+          $("vfChargeTotal").textContent = fmtMoney(visitTotal(readChargeInputs()));
+        }
+        ["vfConsultFee", "vfMedicineFee", "vfOtherFee", "vfDiscount"].forEach(function (id) {
+          $(id).addEventListener("input", updateChargeTotal);
+        });
         $("visitForm").addEventListener("submit", function (e) {
           e.preventDefault();
           var date = $("vfDate").value;
@@ -929,12 +1036,17 @@
             });
           });
           var id = $("vfId").value;
+          var charges = readChargeInputs();
           var data = {
             patientId: currentPatientId,
             date: date, complaint: complaint,
             exam: $("vfExam").value.trim(),
             diagnosis: $("vfDiagnosis").value.trim(),
             followup: $("vfFollowup").value || "",
+            consultationFee: charges.consultationFee,
+            medicineFee: charges.medicineFee,
+            otherFee: charges.otherFee,
+            discount: charges.discount,
             rx: rx
           };
           var vBtn = $("visitForm").querySelector('button[type="submit"]');
@@ -970,6 +1082,21 @@
         });
 
         /* ---------------- prescription print ---------------- */
+        function chargesPrintBlock(v) {
+          if (!hasCharges(v)) return "";
+          function line(label, val) {
+            return '<tr><td>' + label + '</td><td style="text-align:right">' + val + '</td></tr>';
+          }
+          var rows = "";
+          if (num(v.consultationFee) > 0) rows += line("စမ်းသပ်ခ", fmtNum(v.consultationFee));
+          if (num(v.medicineFee) > 0) rows += line("ဆေးဖိုး", fmtNum(v.medicineFee));
+          if (num(v.otherFee) > 0) rows += line("အခြားခ", fmtNum(v.otherFee));
+          if (num(v.discount) > 0) rows += line("လျှော့စျေး", "− " + fmtNum(v.discount));
+          rows += '<tr><td><b>စုစုပေါင်း</b></td><td style="text-align:right"><b>' + fmtMoney(visitTotal(v)) + '</b></td></tr>';
+          return '<div style="margin-top:18px;max-width:340px;margin-left:auto">' +
+            '<div style="font-weight:700;font-size:14px;margin-bottom:6px">ကျသင့်ငွေ (Charges)</div>' +
+            '<table>' + rows + '</table></div>';
+        }
         function printRx(visitId) {
           var v = null, p = patientById(currentPatientId);
           for (var i = 0; i < state.visits.length; i++) if (state.visits[i].id === visitId) v = state.visits[i];
@@ -997,6 +1124,7 @@
             '<div class="rx-symbol">℞</div>' +
             (rows ? '<table><thead><tr><th>#</th><th>ဆေး (Drug)</th><th>ပမာဏ</th><th>အကြိမ်</th><th>ကြာချိန်</th><th>မှတ်ချက်</th></tr></thead><tbody>' + rows + '</tbody></table>' : '<p>ဆေးစာရင်း မရှိပါ။</p>') +
             (v.followup ? '<p style="font-size:14px;margin-top:14px">Follow-up — <b>' + fmtDate(v.followup) + '</b> ပြန်ပြရန်</p>' : '') +
+            chargesPrintBlock(v) +
             '<div class="rx-foot"><div></div><div class="sign"><div class="line">ဆရာဝန် လက်မှတ်</div></div></div>' +
             '</div>';
           $("printArea").classList.add("open");
@@ -1004,6 +1132,124 @@
           window.scrollTo(0, 0);
           $("rxClose").addEventListener("click", function () { $("printArea").classList.remove("open"); });
           $("rxPrint").addEventListener("click", function () { window.print(); });
+        }
+
+        /* ---------------- accounts (ငွေစာရင်း) ---------------- */
+        var acctRangeInit = false;
+        function monthRange() {
+          var d = new Date();
+          var ym = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+          var lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+          return { from: ym + "-01", to: ym + "-" + String(lastDay).padStart(2, "0") };
+        }
+        function openAccounts() {
+          if (!acctRangeInit) {
+            var r = monthRange();
+            $("acctFrom").value = r.from;
+            $("acctTo").value = r.to;
+            acctRangeInit = true;
+          }
+          renderAccounts();
+          show("view-accounts");
+        }
+        function acctVisitsInRange() {
+          var from = $("acctFrom").value, to = $("acctTo").value;
+          return state.visits.filter(function (v) {
+            return v.date && (!from || v.date >= from) && (!to || v.date <= to);
+          }).sort(function (a, b) {
+            return (b.date || "").localeCompare(a.date || "") || (b.createdAt - a.createdAt);
+          });
+        }
+        function acctSums(rows) {
+          var s = { consult: 0, med: 0, other: 0, disc: 0, total: 0 };
+          rows.forEach(function (v) {
+            s.consult += num(v.consultationFee);
+            s.med += num(v.medicineFee);
+            s.other += num(v.otherFee);
+            s.disc += num(v.discount);
+            s.total += visitTotal(v);
+          });
+          return s;
+        }
+        function renderAccounts() {
+          var rows = acctVisitsInRange();
+          var s = acctSums(rows);
+          $("acctStats").innerHTML =
+            '<div class="stat"><b>' + fmtMoney(s.total) + '</b><span>ရငွေ စုစုပေါင်း</span></div>' +
+            '<div class="stat"><b>' + fmtMoney(s.consult) + '</b><span>စမ်းသပ်ခ စုစုပေါင်း</span></div>' +
+            '<div class="stat"><b>' + fmtMoney(s.med) + '</b><span>ဆေးဖိုး စုစုပေါင်း</span></div>' +
+            '<div class="stat"><b>' + fmtMoney(s.other) + '</b><span>အခြားခ စုစုပေါင်း</span></div>' +
+            '<div class="stat"><b>' + fmtMoney(s.disc) + '</b><span>လျှော့စျေး စုစုပေါင်း</span></div>' +
+            '<div class="stat"><b>' + rows.length + '</b><span>Visit အရေအတွက်</span></div>';
+          var wrap = $("acctTableWrap");
+          if (!rows.length) {
+            wrap.innerHTML = '<div class="empty"><b>ဒီကာလအတွင်း Visit မရှိပါ</b>ရက်စွဲ အပိုင်းအခြား ပြောင်းလဲ ကြည့်ပါ။</div>';
+            return;
+          }
+          var body = rows.map(function (v) {
+            var p = patientById(v.patientId);
+            return '<tr>' +
+              '<td data-label="ရက်စွဲ">' + fmtDate(v.date) + '</td>' +
+              '<td data-label="လူနာ">' + esc(p ? p.name : "—") + '</td>' +
+              '<td data-label="စမ်းသပ်ခ">' + fmtNum(v.consultationFee) + '</td>' +
+              '<td data-label="ဆေးဖိုး">' + fmtNum(v.medicineFee) + '</td>' +
+              '<td data-label="အခြားခ">' + fmtNum(v.otherFee) + '</td>' +
+              '<td data-label="လျှော့စျေး">' + fmtNum(v.discount) + '</td>' +
+              '<td data-label="စုစုပေါင်း"><b>' + fmtNum(visitTotal(v)) + '</b></td></tr>';
+          }).join("");
+          var foot = '<tfoot><tr>' +
+            '<td data-label="">စုစုပေါင်း</td><td data-label="">' + rows.length + ' visits</td>' +
+            '<td data-label="စမ်းသပ်ခ">' + fmtNum(s.consult) + '</td>' +
+            '<td data-label="ဆေးဖိုး">' + fmtNum(s.med) + '</td>' +
+            '<td data-label="အခြားခ">' + fmtNum(s.other) + '</td>' +
+            '<td data-label="လျှော့စျေး">' + fmtNum(s.disc) + '</td>' +
+            '<td data-label="စုစုပေါင်း">' + fmtNum(s.total) + '</td></tr></tfoot>';
+          wrap.innerHTML = '<table class="acct"><thead><tr><th>ရက်စွဲ</th><th>လူနာ</th><th>စမ်းသပ်ခ</th><th>ဆေးဖိုး</th><th>အခြားခ</th><th>လျှော့စျေး</th><th>စုစုပေါင်း</th></tr></thead><tbody>' + body + '</tbody>' + foot + '</table>' +
+            '<p style="color:var(--ink-faint);font-size:.84rem;margin-top:8px">ပမာဏအားလုံး ကျပ် (MMK) ဖြင့်ဖြစ်သည်။</p>';
+        }
+        function printAccounts() {
+          var rows = acctVisitsInRange();
+          var s = acctSums(rows);
+          var from = $("acctFrom").value, to = $("acctTo").value;
+          var rangeText = (from ? fmtDate(from) : "—") + " — " + (to ? fmtDate(to) : "—");
+          function cell(val, right) {
+            return '<td' + (right ? ' style="text-align:right"' : '') + '>' + val + '</td>';
+          }
+          var body = rows.map(function (v) {
+            var p = patientById(v.patientId);
+            return '<tr>' + cell(fmtDate(v.date)) + cell(esc(p ? p.name : "—")) +
+              cell(fmtNum(v.consultationFee), true) + cell(fmtNum(v.medicineFee), true) +
+              cell(fmtNum(v.otherFee), true) + cell(fmtNum(v.discount), true) +
+              cell("<b>" + fmtNum(visitTotal(v)) + "</b>", true) + '</tr>';
+          }).join("");
+          var foot = '<tr>' + cell("<b>စုစုပေါင်း</b>") + cell("<b>" + rows.length + " visits</b>") +
+            cell("<b>" + fmtNum(s.consult) + "</b>", true) + cell("<b>" + fmtNum(s.med) + "</b>", true) +
+            cell("<b>" + fmtNum(s.other) + "</b>", true) + cell("<b>" + fmtNum(s.disc) + "</b>", true) +
+            cell("<b>" + fmtNum(s.total) + "</b>", true) + '</tr>';
+          $("printArea").innerHTML =
+            '<div class="rx-toolbar">' +
+            '<button class="btn" id="acctClose" type="button">← ပြန်သွားရန်</button>' +
+            '<button class="btn primary" id="acctPrint" type="button">Print ထုတ်ရန်</button></div>' +
+            '<div class="sheet">' +
+            '<div class="rx-head"><div><div class="big">ငွေစာရင်း ရှင်းတမ်း</div><div class="small">Income Statement</div></div>' +
+            '<div class="small">ကာလ — ' + rangeText + '</div></div>' +
+            (rows.length
+              ? '<table><thead><tr><th>ရက်စွဲ</th><th>လူနာ</th><th style="text-align:right">စမ်းသပ်ခ</th><th style="text-align:right">ဆေးဖိုး</th><th style="text-align:right">အခြားခ</th><th style="text-align:right">လျှော့စျေး</th><th style="text-align:right">စုစုပေါင်း</th></tr></thead><tbody>' + body + '</tbody><tfoot>' + foot + '</tfoot></table>'
+              : '<p>ဒီကာလအတွင်း Visit မရှိပါ။</p>') +
+            '<div style="margin-top:18px;font-size:14px;line-height:1.9">' +
+            '<div>Visit အရေအတွက် — <b>' + rows.length + '</b></div>' +
+            '<div>စမ်းသပ်ခ စုစုပေါင်း — <b>' + fmtMoney(s.consult) + '</b></div>' +
+            '<div>ဆေးဖိုး စုစုပေါင်း — <b>' + fmtMoney(s.med) + '</b></div>' +
+            '<div>အခြားခ စုစုပေါင်း — <b>' + fmtMoney(s.other) + '</b></div>' +
+            '<div>လျှော့စျေး စုစုပေါင်း — <b>' + fmtMoney(s.disc) + '</b></div>' +
+            '<div style="font-size:16px">ရငွေ စုစုပေါင်း — <b>' + fmtMoney(s.total) + '</b></div>' +
+            '</div>' +
+            '</div>';
+          $("printArea").classList.add("open");
+          $("printArea").scrollTop = 0;
+          window.scrollTo(0, 0);
+          $("acctClose").addEventListener("click", function () { $("printArea").classList.remove("open"); });
+          $("acctPrint").addEventListener("click", function () { window.print(); });
         }
 
         /* ---------------- backup import into Supabase ---------------- */
@@ -1046,6 +1292,10 @@
                 exam: ov.exam || ov.examination || "",
                 diagnosis: ov.diagnosis || "",
                 followup: ov.followup || ov.follow_up_date || "",
+                consultationFee: num(ov.consultationFee != null ? ov.consultationFee : ov.consultation_fee),
+                medicineFee: num(ov.medicineFee != null ? ov.medicineFee : ov.medicine_fee),
+                otherFee: num(ov.otherFee != null ? ov.otherFee : ov.other_fee),
+                discount: num(ov.discount),
                 rx: ov.rx || []
               };
               var vpayload = visitPayload(nv);
@@ -1200,6 +1450,11 @@
         $("btnNewVisit").addEventListener("click", function () { openVisitForm(null); });
         $("btnVisitBack").addEventListener("click", function () { goDetail(currentPatientId); });
         $("btnVisitCancel").addEventListener("click", function () { goDetail(currentPatientId); });
+        $("btnAccounts").addEventListener("click", openAccounts);
+        $("btnAccountsBack").addEventListener("click", goList);
+        $("acctFrom").addEventListener("change", renderAccounts);
+        $("acctTo").addEventListener("change", renderAccounts);
+        $("btnPrintAccounts").addEventListener("click", printAccounts);
 
         /* ---------------- init: restore existing session ---------------- */
         if (!sb) {
